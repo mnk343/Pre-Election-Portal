@@ -193,9 +193,11 @@ class ApproveAPIToggleComment(APIView):
         }
         return Response(data)
 
+
 def index(request):
     question_form = AskForm()
-    d = {'question_form': question_form}
+    comment_form = CommentForm()
+    d = {'question_form': question_form, 'comment_form': comment_form}
     if request.user.is_authenticated:
         d['is_authenticated'] = True
         user = request.user.junta

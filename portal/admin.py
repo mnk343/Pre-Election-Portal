@@ -4,6 +4,13 @@ from django_summernote.admin import SummernoteModelAdmin
 from . import models
 
 
+def make_approved(modeladmin, request, queryset):
+    queryset.update(approved='p')
+
+
+make_approved.short_description = "Mark selected items as approved"
+
+
 class JuntaAdmin(admin.ModelAdmin):
     list_display = ['user', 'role', 'image_tag']
     readonly_fields = ['image_tag']
@@ -19,7 +26,7 @@ class QuestionAdmin(SummernoteModelAdmin):
     list_display = ('asked_to', 'question')
     list_filter = ('approved', 'asked_to', 'answered',)
     search_fields = ('question', 'asked_to', 'answer',)
-    actions = ('approve_questions',)
+    actions = ['make_approved']
     summernote_fields = ('answer',)
 
 
@@ -29,7 +36,8 @@ class HostelAdmin(admin.ModelAdmin):
 
 class CommentAdmin(SummernoteModelAdmin):
     list_display = ('comment', 'question', 'comment_by')
-    actions = ('approve_comments',)
+    list_filter = ('approved',)
+    actions = ['make_approved']
 
 
 admin.site.register(models.Junta, JuntaAdmin)

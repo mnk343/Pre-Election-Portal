@@ -53,10 +53,6 @@ class Question(models.Model):
     class Meta:
         ordering = ['asked_on']
 
-    @staticmethod
-    def approve_questions(queryset):
-        queryset.update(approved=True)
-
     def __str__(self):
         return '{}'.format(self.question)
 
