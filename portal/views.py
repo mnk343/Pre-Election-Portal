@@ -193,9 +193,49 @@ class ApproveAPIToggleComment(APIView):
         }
         return Response(data)
 
+
+class DeleteQuestionAPIToggle(APIView):
+    authentication_classes = [authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk=None, format=None):
+        obj = get_object_or_404(Question, pk=pk)
+        user = self.request.user
+        updated = False
+        if user.is_authenticated:
+            if user.junta.role == choices.ELECTION_COMMISSION:
+                updated = True
+                for comment in obj.comments.all():
+                    comment.delete()
+                obj.delete()
+        data = {
+            'updated': updated,
+        }
+        return Response(data)
+
+
+class DeleteCommentAPIToggle(APIView):
+    authentication_classes = [authentication.SessionAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, pk=None, format=None):
+        obj = get_object_or_404(Comment, pk=pk)
+        user = self.request.user
+        updated = False
+        if user.is_authenticated:
+            if user.junta.role == choices.ELECTION_COMMISSION:
+                updated = True
+                obj.delete()
+        data = {
+            'updated': updated,
+        }
+        return Response(data)
+
+
 def index(request):
     question_form = AskForm()
-    d = {'question_form': question_form}
+    comment_form = CommentForm()
+    d = {'question_form': question_form, 'comment_form': comment_form}
     if request.user.is_authenticated:
         d['is_authenticated'] = True
         user = request.user.junta

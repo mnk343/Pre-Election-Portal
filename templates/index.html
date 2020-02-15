@@ -108,6 +108,26 @@
                 });
             });
 
+            $(".btn-delete").click(function (e) {
+                e.preventDefault();
+                const this_ = $(this);
+                const deleteUrl = this_.attr("data-href");
+                $.ajax({
+                    url: deleteUrl,
+                    method: "GET",
+                    data: {},
+                    success: function (data) {
+                        console.log(data)
+                        this_.text("Deleted");
+                    },
+                    error: function (error) {
+                        console.log("error");
+                        console.log(error);
+                        alert("Error in Deleting");
+                    }
+                });
+            });
+
             $(".btn-sort-recent").click(function (e) {
                 e.preventDefault();
                 const this_ = $(this);
@@ -133,7 +153,7 @@
     {% if unapproved_questions %}
         {% for question in unapproved_questions %}
             <p><strong>{{ question.question }}</strong></p>
-            <span><button class="btn-approve" data-href="{% url 'portal:api-approve' question.pk  %}" >Approve</button></span>
+            <span><button class="btn-approve" data-href="{% url 'portal:api-approve' question.pk  %}" >Approve</button><button class="btn-delete" data-href="{% url 'portal:api-delete-question' question.pk  %}" >Delete</button></span>
             <hr>
         {% endfor %}
     {% endif %}
@@ -142,7 +162,7 @@
         {% for comment in unapproved_comments %}
             <p><strong>{{ comment.question.question }}</strong></p>
             <p><i>{{ comment.comment|safe }}</i></p>
-            <span><button class="btn-approve" data-href="{% url 'portal:api-approve-comment' comment.pk  %}" >Approve</button></span>
+            <span><button class="btn-approve" data-href="{% url 'portal:api-approve-comment' comment.pk  %}" >Approve</button><button class="btn-delete" data-href="{% url 'portal:api-delete-comment' comment.pk  %}" >Delete</button></span>
             <hr>
         {% endfor %}
     {% endif %}
@@ -224,6 +244,7 @@
                             {{ question.answer|safe }}
                         </div>
                     {% endif %}
+<<<<<<< HEAD
                     <span class="vote-tray">
                         {% if user in question.upvotes.all %}
                             <span><a class="btn-upvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_upvote_api_url }}" ><i style="color: blue" class="far fa-thumbs-up"></i></a></span>
@@ -237,6 +258,17 @@
                             <span><a class="btn-downvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_downvote_api_url }}"><i class="far fa-thumbs-down"></i></a></span>
                         {% endif %}
                     </span>
+=======
+                {% endfor %}
+            {% endif %}
+            <br>
+            <form id="comment-form" class="form-group" action="{% url 'portal:comment' question.pk %}" method="post">
+                {% csrf_token %}
+                {{ comment_form.as_p }}
+                <input type="submit" name="Comment" value="Comment">
+            </form>
+            <br><a class="btn btn-primary" href="{% url 'portal:comment' question.pk %}">Add Comment</a>
+>>>>>>> a4d213da2a1741679293f53a3fe6af4d87098463
 
                     <div class="comments" style="display: none">
                         {% if question.comments.count != 0%}
