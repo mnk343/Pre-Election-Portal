@@ -5,14 +5,13 @@
 {% block titleBlock %}
     <title>Pre Election Portal</title>
     <link href="//netdna.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.9/summernote-lite.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="//netdna.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/3fb32c2b41.js" crossorigin="anonymous"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.9/summernote-lite.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.9/summernote-lite.js"></script>
-
     <script>
         {% block jqueryBlock %}
             function updateVoteCount(span, upvotes, downvotes, upvoteColor, downvoteColor) {
@@ -114,6 +113,17 @@
                 const this_ = $(this);
                 $()
             });
+
+            $(".btn.btn-primary.toggle-comment").click(function (e) {
+                e.preventDefault();
+                $(this).parent().children(".comments").toggle("1000");
+                if($(this).text() === "Show Comments") {
+                    $(this).text("Hide Comments");
+                } else {
+                    $(this).text("Show Comments");
+                }
+
+            });
         {% endblock %}
     </script>
 {% endblock %}
@@ -198,49 +208,68 @@
     {% if approved_questions %}
         <span id="approved-sort-tray" class="sort-tray"><button class="btn-sort-recent" type="button">Recent</button> <button class="btn-sort-upvotes" type="button">Upvotes</button></span>
         {% for question in approved_questions %}
-            <p><strong>{{ question.question }}</strong></p>
-            {% if question.answered %}
-                <p>{{ question.answer|safe }}</p>
-            {% endif %}
-            <span class="vote-tray">
-                {% if user in question.upvotes.all %}
-                    <span><a class="btn-upvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_upvote_api_url }}" ><i style="color: blue" class="far fa-thumbs-up"></i></a></span>
-                {% else %}
-                    <span><a class="btn-upvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_upvote_api_url }}" ><i class="far fa-thumbs-up"></i></a></span>
-                {% endif %}
-                <span class="text-vote">{{ question.upvotes.count|subtract:question.downvotes.count }}</span>
-                {% if user in question.downvotes.all %}
-                    <span><a class="btn-downvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_downvote_api_url }}"><i style="color: red" class="far fa-thumbs-down"></i></a></span>
-                {% else %}
-                    <span><a class="btn-downvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_downvote_api_url }}"><i class="far fa-thumbs-down"></i></a></span>
-                {% endif %}
-            </span>
-
-            {% if question.comments.count != 0%}
-                <br>
-                {% for comment in question.comments.all  %}
-                    {% if comment.approved %}
-                        <p><i>{{ comment.comment|safe }}</i></p>
-
-                        <span class="vote-tray">
-                            {% if user in comment.upvotes.all %}
-                                <span><a class="btn-upvote" data-upvote="{{ comment.upvotes.count }}" data-downvote="{{ comment.downvotes.count }}" data-href="{{ comment.get_upvote_api_url }}" ><i style="color: blue" class="far fa-thumbs-up"></i></a></span>
-                            {% else %}
-                                <span><a class="btn-upvote" data-upvote="{{ comment.upvotes.count }}" data-downvote="{{ comment.downvotes.count }}" data-href="{{ comment.get_upvote_api_url }}" ><i class="far fa-thumbs-up"></i></a></span>
-                            {% endif %}
-                            <span class="text-vote">{{ comment.upvotes.count|subtract:comment.downvotes.count }}</span>
-                            {% if user in comment.downvotes.all %}
-                                <span><a class="btn-downvote" data-upvote="{{ comment.upvotes.count }}" data-downvote="{{ comment.downvotes.count }}" data-href="{{ comment.get_downvote_api_url }}"><i style="color: red" class="far fa-thumbs-down"></i></a></span>
-                            {% else %}
-                                <span><a class="btn-downvote" data-upvote="{{ comment.upvotes.count }}" data-downvote="{{ comment.downvotes.count }}" data-href="{{ comment.get_downvote_api_url }}"><i class="far fa-thumbs-down"></i></a></span>
-                            {% endif %}
-                        </span>
+            <div class="card border-dark m-3">
+                <div class="card-header">
+                    <strong>{{ question.question }}</strong>
+                </div>
+                <div class="card-body">
+                    <div class="card-text">
+                        <div class="text-muted">
+                            <strong>Asked to {{ question.asked_to }}</strong>
+                        </div>
+                        <p><small class="text-muted">Asked by {{ question.asked_by }} on {{ question.asked_on }}</small></p>
+                    </div>
+                    {% if question.answered %}
+                        <div class="card-text">
+                            {{ question.answer|safe }}
+                        </div>
                     {% endif %}
-                {% endfor %}
-            {% endif %}
-            <br><a class="btn btn-primary" href="{% url 'portal:comment' question.pk %}">Add Comment</a>
+                    <span class="vote-tray">
+                        {% if user in question.upvotes.all %}
+                            <span><a class="btn-upvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_upvote_api_url }}" ><i style="color: blue" class="far fa-thumbs-up"></i></a></span>
+                        {% else %}
+                            <span><a class="btn-upvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_upvote_api_url }}" ><i class="far fa-thumbs-up"></i></a></span>
+                        {% endif %}
+                        <span class="text-vote">{{ question.upvotes.count|subtract:question.downvotes.count }}</span>
+                        {% if user in question.downvotes.all %}
+                            <span><a class="btn-downvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_downvote_api_url }}"><i style="color: red" class="far fa-thumbs-down"></i></a></span>
+                        {% else %}
+                            <span><a class="btn-downvote" data-upvote="{{ question.upvotes.count }}" data-downvote="{{ question.downvotes.count }}" data-href="{{ question.get_downvote_api_url }}"><i class="far fa-thumbs-down"></i></a></span>
+                        {% endif %}
+                    </span>
 
-            <hr>
+                    <div class="comments" style="display: none">
+                        {% if question.comments.count != 0%}
+                            <div class="ml-5">
+                                <br>
+                                {% for comment in question.comments.all  %}
+                                    {% if comment.approved %}
+                                        <strong><p>{{ comment.comment_by }}</p></strong>
+                                        <p><i>{{ comment.comment|safe }}</i></p>
+
+                                        <span class="vote-tray">
+                                            {% if user in comment.upvotes.all %}
+                                                <span><a class="btn-upvote" data-upvote="{{ comment.upvotes.count }}" data-downvote="{{ comment.downvotes.count }}" data-href="{{ comment.get_upvote_api_url }}" ><i style="color: blue" class="far fa-thumbs-up"></i></a></span>
+                                            {% else %}
+                                                <span><a class="btn-upvote" data-upvote="{{ comment.upvotes.count }}" data-downvote="{{ comment.downvotes.count }}" data-href="{{ comment.get_upvote_api_url }}" ><i class="far fa-thumbs-up"></i></a></span>
+                                            {% endif %}
+                                            <span class="text-vote">{{ comment.upvotes.count|subtract:comment.downvotes.count }}</span>
+                                            {% if user in comment.downvotes.all %}
+                                                <span><a class="btn-downvote" data-upvote="{{ comment.upvotes.count }}" data-downvote="{{ comment.downvotes.count }}" data-href="{{ comment.get_downvote_api_url }}"><i style="color: red" class="far fa-thumbs-down"></i></a></span>
+                                            {% else %}
+                                                <span><a class="btn-downvote" data-upvote="{{ comment.upvotes.count }}" data-downvote="{{ comment.downvotes.count }}" data-href="{{ comment.get_downvote_api_url }}"><i class="far fa-thumbs-down"></i></a></span>
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <br>
+                    <a class="btn btn-primary toggle-comment" href="">Show Comments</a>
+                    <a class="btn btn-primary add-comment" href="{% url 'portal:comment' question.pk %}">Add Comment</a>
+                </div>
+            </div>
         {% endfor %}
 
     {% endif %}
